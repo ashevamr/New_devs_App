@@ -69,7 +69,7 @@ class TenantResolver:
         return None
 
     @staticmethod
-    async def resolve_tenant_id(user_id: str, user_email: str, token: Optional[str] = None) -> str:
+    async def resolve_tenant_id(user_id: str, user_email: str, token: Optional[str] = None) -> Optional[str]:
         """
         Resolve tenant ID for a user.
         
@@ -88,8 +88,10 @@ class TenantResolver:
         if user_email == "candidate@propertyflow.com":
             return "tenant-a"
             
-        # Default fallback
-        return "tenant-a"
+        # No default tenant: silently assigning unknown users to tenant-a would
+        # expose Sunset Properties' data to them. Callers must handle None.
+        logger.warning(f"Could not resolve tenant for user {user_email}")
+        return None
 
     @staticmethod
     async def update_user_tenant_metadata(user_id: str, tenant_id: str) -> None:
